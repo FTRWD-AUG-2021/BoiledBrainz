@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken')
 
 //http://localhost:5000/api/all-posts GET
 router.get('/all-posts', async (req, res) => {
-    let allPosts = await Post.find()
+    let allPosts = await Post.find().populate('userId')
     res.json(allPosts)
 })
 
@@ -19,6 +19,19 @@ router.post('/new-post', authorize, async (req, res) => {
     res.json(post)
 })
 
+
+router.get('/my-posts', authorize, async (req, res) => {
+
+    let myPosts = await Post.find({ userId: res.locals.user._id }).populate('userId')
+
+    res.json(myPosts)
+})
+
+router.post('/like-post', authorize, async (req, res) => {
+    console.log('did i  hit this!?', req.body)
+    let updatedPost = await Post.findByIdAndUpdate(req.body.postId, { $inc: { likes: 1 } }, { new: true }).populate('userId')
+    res.json(updatedPost)
+})
 
 router.get('/get-user', authorize, async (req, res) => {
     let user = await User.findById(res.locals.user._id)
